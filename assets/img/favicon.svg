@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="g" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ec0a78"/>
+      <stop offset="55%" stop-color="#a01a64"/>
+      <stop offset="100%" stop-color="#1b1f4e"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="6" fill="#0a0e27"/>
+  <!-- INTELLIFY 4-point sparkle -->
+  <path d="M16 3 Q17.6 14.4 29 16 Q17.6 17.6 16 29 Q14.4 17.6 3 16 Q14.4 14.4 16 3 Z" fill="url(#g)"/>
+  <circle cx="16" cy="4.5" r="1.3" fill="#ec0a78"/>
+  <circle cx="27.5" cy="16" r="1.3" fill="#ec0a78"/>
+  <circle cx="16" cy="27.5" r="1.3" fill="#1b1f4e"/>
+  <circle cx="4.5" cy="16" r="1.3" fill="#1b1f4e"/>
+</svg>

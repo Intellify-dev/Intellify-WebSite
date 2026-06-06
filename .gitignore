@@ -1,0 +1,14 @@
+# Redundant local publish bundle (live site is served from the repo root)
+deploy/
+
+# Internal setup notes
+FIREBASE_SETUP.md
+
+# Stray source images at repo root (the site uses assets/img/* only)
+/logo.png
+/logo without background.png
+
+# OS / editor cruft
+Thumbs.db
+.DS_Store
+*.log

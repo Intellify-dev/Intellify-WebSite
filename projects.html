@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Projects — INTELLIFY</title>
+  <meta name="description" content="A curated selection of recent INTELLIFY projects across AI, web, mobile, and enterprise software."/>
+  <link rel="icon" type="image/png" href="assets/img/favicon.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="assets/css/style.css"/>
+  <script>window.__ALIEN_OPTS__ = { page: 'projects' };</script>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<div data-nav></div>
+
+<section style="padding-top: 160px; padding-bottom: 30px;">
+  <div class="container">
+    <div data-head="projects" style="margin-bottom: 24px;"></div>
+  </div>
+</section>
+
+<section style="padding-top: 0;">
+  <div class="container">
+    <div class="projects-grid reveal-stagger" data-projects></div>
+  </div>
+</section>
+
+<section style="padding-bottom: 40px">
+  <div class="container">
+    <div class="reveal" style="padding:50px 40px;text-align:center;background:linear-gradient(135deg, rgba(0,240,255,0.06), rgba(168,85,247,0.06));border:1px solid var(--border);border-radius:24px;">
+      <h2 style="margin-bottom: 14px;">Want to be in the next batch?</h2>
+      <p style="max-width:520px;margin:0 auto 24px">Whether you have a rough idea or a detailed brief, we'll help you ship it.</p>
+      <a href="contact.html" class="btn btn-primary">
+        Get in Touch
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div data-footer></div>
+
+<!-- Firebase (live database) — harmless until enabled in firebase-config.js -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="assets/js/firebase-config.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

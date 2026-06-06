@@ -1,0 +1,92 @@
+{
+  "brand": {
+    "name": "INTELLIFY",
+    "slogan": "WE INTELLIFY YOUR BUSINESS",
+    "logo": "assets/img/logo-full.png",
+    "mark": "assets/img/logo-mark.png"
+  },
+  "hero": {
+    "eyebrow": "// System Online",
+    "headline": "We",
+    "accent": "intellify your business.",
+    "lead": "INTELLIFY turns complexity into clarity — from AI platforms and modern web apps to mobile experiences, branding and full-stack accounting systems. Premium engineering, dynamic design, zero compromises.",
+    "primaryCtaLabel": "Explore Services",
+    "secondaryCtaLabel": "Start a Project",
+    "stats": [
+      { "num": "120", "suffix": "+", "label": "Projects Shipped" },
+      { "num": "45", "suffix": "+", "label": "Happy Clients" },
+      { "num": "9", "suffix": "", "label": "Core Services" },
+      { "num": "99.9", "suffix": "%", "label": "Uptime" }
+    ]
+  },
+  "sections": {
+    "servicesEyebrow": "// Capabilities",
+    "servicesHeading": "Services that <span class=\"gradient-text\">cross dimensions</span>",
+    "servicesText": "A full-spectrum technology partner. From the first idea to the production rollout, we cover every layer of your digital stack.",
+    "projectsEyebrow": "// Mission Archive",
+    "projectsHeading": "Selected <span class=\"gradient-text\">Projects</span>",
+    "projectsText": "A snapshot of the systems we've shipped — across industries, time zones and tech stacks."
+  },
+  "why": {
+    "eyebrow": "// Why INTELLIFY",
+    "heading": "Built like spacecraft.<br/>Delivered like clockwork.",
+    "items": [
+      { "icon": "bolt", "title": "Lightspeed Delivery", "desc": "We move fast without breaking things. Sprint-based delivery, transparent status, demoable progress every week." },
+      { "icon": "shield", "title": "Production-Grade Code", "desc": "Typed, tested, documented. Code that survives audits and scales with your team and your traffic." },
+      { "icon": "globe", "title": "Global Mindset", "desc": "Multi-language, multi-currency, multi-region. We design products for the world from day one." },
+      { "icon": "stack", "title": "Modern Stack", "desc": "React, Next.js, Flutter, TensorFlow, AWS — the best tools for the job, never the trendiest for trend's sake." }
+    ]
+  },
+  "cta": {
+    "eyebrow": "// Initiate Contact",
+    "heading": "Have a project worth building?",
+    "text": "Tell us about your idea. We'll send back a concrete plan, timeline, and price — typically within 48 hours.",
+    "buttonLabel": "Start the Mission"
+  },
+  "contact": {
+    "email": "info.alentech@gmail.com",
+    "whatsapp1": "0937824156",
+    "whatsapp2": "0999999999",
+    "address": "Damascus, Syria — Remote Worldwide"
+  },
+  "services": [
+    { "id": "s1", "icon": "ai", "title": "Artificial Intelligence", "tag": "AI / ML",
+      "desc": "Custom AI models, chatbots, computer vision and predictive analytics tailored to your data." },
+    { "id": "s2", "icon": "web", "title": "Web Development", "tag": "React / Next",
+      "desc": "High-performance websites and dashboards engineered with React, Next.js and modern tooling." },
+    { "id": "s3", "icon": "wp", "title": "WordPress Solutions", "tag": "CMS",
+      "desc": "Tailored WordPress themes, plugins and full e-commerce stores built on WooCommerce." },
+    { "id": "s4", "icon": "flutter", "title": "Flutter Mobile Apps", "tag": "iOS / Android",
+      "desc": "Cross-platform mobile applications with native feel, smooth animations and offline support." },
+    { "id": "s5", "icon": "brand", "title": "Graphic Design & Branding", "tag": "Identity",
+      "desc": "Logos, brand systems and marketing collateral that make your company unmistakably you." },
+    { "id": "s6", "icon": "video", "title": "Video Editing", "tag": "Motion",
+      "desc": "Cinematic edits, motion graphics and short-form content optimized for any platform." },
+    { "id": "s7", "icon": "erp", "title": "Accounting Systems", "tag": "ERP",
+      "desc": "Custom accounting and ERP software with invoicing, inventory and real-time reporting." },
+    { "id": "s8", "icon": "cloud", "title": "Cloud & DevOps", "tag": "Infra",
+      "desc": "CI/CD pipelines, container orchestration and scalable cloud architectures on AWS, GCP, Azure." },
+    { "id": "s9", "icon": "sec", "title": "Cybersecurity", "tag": "Defense",
+      "desc": "Security audits, penetration testing and hardening to keep your systems and data safe." }
+  ],
+  "projects": [
+    { "id": "p1", "name": "NeuroPilot Analytics", "category": "AI Platform",
+      "desc": "Real-time anomaly-detection platform for industrial sensors, processing 2M+ events / minute.",
+      "image": "gradient-1" },
+    { "id": "p2", "name": "Orbit Commerce", "category": "E-commerce",
+      "desc": "Headless commerce stack with React storefront, Stripe checkout and Sanity CMS.",
+      "image": "gradient-2" },
+    { "id": "p3", "name": "PulseBank Mobile", "category": "Flutter",
+      "desc": "Mobile banking app with biometric login, P2P payments and budgeting AI.",
+      "image": "gradient-3" },
+    { "id": "p4", "name": "Helix Health CMS", "category": "WordPress",
+      "desc": "WordPress + WooCommerce platform for a medical-services chain with bookings and tele-consults.",
+      "image": "gradient-4" },
+    { "id": "p5", "name": "Quantum Studio", "category": "Branding",
+      "desc": "Full brand identity, web presence and motion package for a generative-art studio.",
+      "image": "gradient-5" },
+    { "id": "p6", "name": "Ledger X ERP", "category": "Accounting",
+      "desc": "Multi-currency accounting and inventory ERP for a regional logistics operator.",
+      "image": "gradient-6" }
+  ]
+}
