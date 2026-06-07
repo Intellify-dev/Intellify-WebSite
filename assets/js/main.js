@@ -260,6 +260,88 @@
   };
   window.AlienStore = Store;
 
+  // ---------- MESSAGES (contact inbox) ----------
+  // Contact-form submissions live in their own top-level Firestore collection
+  // ("messages") — separate from the published site content. That lets an
+  // unauthenticated visitor CREATE a message while only the logged-in admin can
+  // read, mark-read or delete it (enforced by Firestore security rules). When
+  // the database is off, messages fall back to the local store.
+  function messagesCol() {
+    return firebase.firestore().collection('messages');
+  }
+  function localMessages() {
+    try { return loadStore().messages || []; } catch (e) { return []; }
+  }
+
+  // Visitor → submit a new message. Resolves once it's safely stored.
+  function submitMessage(msg) {
+    const payload = {
+      name: (msg.name || '').trim(),
+      email: (msg.email || '').trim(),
+      whatsapp: (msg.whatsapp || '').trim(),
+      subject: (msg.subject || '').trim(),
+      message: (msg.message || '').trim(),
+      read: false,
+      receivedAt: new Date().toISOString()
+    };
+    if (firebaseOn()) {
+      return messagesCol().add(Object.assign({}, payload, {
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }));
+    }
+    // No database: keep a local copy so a same-browser admin still sees it.
+    const data = loadStore();
+    data.messages = data.messages || [];
+    data.messages.unshift(Object.assign({ id: 'm' + Date.now() }, payload));
+    saveStore(data);
+    return Promise.resolve();
+  }
+
+  // Admin → live-subscribe to the inbox (newest first). Returns an unsubscribe fn.
+  function subscribeMessages(cb) {
+    if (firebaseOn()) {
+      try {
+        return messagesCol().orderBy('receivedAt', 'desc').onSnapshot(
+          (snap) => {
+            const list = [];
+            snap.forEach(doc => list.push(Object.assign({ id: doc.id }, doc.data())));
+            cb(list);
+          },
+          (err) => { console.warn('Inbox subscribe failed', err); cb(localMessages()); }
+        );
+      } catch (e) { console.warn('Inbox unavailable', e); }
+    }
+    cb(localMessages());
+    return function () {};
+  }
+  function markMessageRead(id) {
+    if (firebaseOn()) return messagesCol().doc(id).update({ read: true }).catch(e => console.warn(e));
+    const d = loadStore(); const m = (d.messages || []).find(x => x.id === id);
+    if (m && !m.read) { m.read = true; saveStore(d); }
+    return Promise.resolve();
+  }
+  function deleteMessage(id) {
+    if (firebaseOn()) return messagesCol().doc(id).delete().catch(e => console.warn(e));
+    const d = loadStore(); d.messages = (d.messages || []).filter(x => x.id !== id); saveStore(d);
+    return Promise.resolve();
+  }
+  function clearMessages(ids) {
+    if (firebaseOn()) {
+      const batch = firebase.firestore().batch();
+      (ids || []).forEach(id => batch.delete(messagesCol().doc(id)));
+      return batch.commit().catch(e => console.warn(e));
+    }
+    const d = loadStore(); d.messages = []; saveStore(d);
+    return Promise.resolve();
+  }
+  window.AlienMessages = {
+    submit: submitMessage,
+    subscribe: subscribeMessages,
+    markRead: markMessageRead,
+    remove: deleteMessage,
+    clear: clearMessages
+  };
+
   // ---------- ICONS ----------
   const ICONS = {
     ai: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M4.2 4.2l4.3 4.3M15.5 15.5l4.3 4.3M1 12h6M17 12h6M4.2 19.8l4.3-4.3M15.5 8.5l4.3-4.3"/></svg>',

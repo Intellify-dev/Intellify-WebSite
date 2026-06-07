@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- Published site content ----
+    // Anyone can read the live site; only a signed-in admin can edit it.
+    match /site/content {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // ---- Contact-form inbox ----
+    // Any visitor may SUBMIT a message (create only), with light validation to
+    // curb abuse. Only a signed-in admin can read, mark-read (update) or delete.
+    match /messages/{id} {
+      allow create: if request.resource.data.keys().hasAll(['name', 'email', 'message'])
+                    && request.resource.data.name is string
+                    && request.resource.data.email is string
+                    && request.resource.data.message is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.name.size() <= 200
+                    && request.resource.data.email.size() <= 200
+                    && request.resource.data.message.size() > 0
+                    && request.resource.data.message.size() <= 5000;
+      allow read, update, delete: if request.auth != null;
+    }
+  }
+}

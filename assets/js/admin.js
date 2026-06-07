@@ -192,6 +192,30 @@
   const SECTIONS = ['overview', 'branding', 'hero', 'services', 'projects', 'why', 'cta', 'messages', 'contact', 'settings'];
   let currentSection = 'overview';
 
+  // --------- LIVE INBOX ---------
+  // The contact inbox is streamed from Firestore in real time (see AlienMessages
+  // in main.js). `liveMessages` holds the latest snapshot; null until the first
+  // one arrives, so we fall back to the local store meanwhile.
+  let liveMessages = null;
+  let _msgUnsub = null;
+  function getMessages() {
+    if (Array.isArray(liveMessages)) return liveMessages;
+    try { return AlienStore.get().messages || []; } catch (e) { return []; }
+  }
+  function subscribeInbox() {
+    if (_msgUnsub || !window.AlienMessages) return;
+    _msgUnsub = AlienMessages.subscribe((list) => {
+      liveMessages = list;
+      // Refresh inbox-dependent views — but never while a modal is open.
+      const back = document.getElementById('modal-backdrop');
+      if (back && back.classList.contains('show')) return;
+      if (document.getElementById('admin-main') &&
+          (currentSection === 'overview' || currentSection === 'messages')) {
+        renderSection();
+      }
+    });
+  }
+
   function renderDashboard() {
     document.body.innerHTML = `
       <canvas id="particles"></canvas>
@@ -233,6 +257,7 @@
       });
     });
 
+    subscribeInbox();
     renderSection();
     bootstrapBackground();
   }
@@ -274,7 +299,8 @@
   // --------- OVERVIEW ---------
   function viewOverview() {
     const d = AlienStore.get();
-    const unread = (d.messages || []).filter(m => !m.read).length;
+    const messages = getMessages();
+    const unread = messages.filter(m => !m.read).length;
     return `
       <div class="admin-topbar">
         <h2>Mission Control</h2>
@@ -291,7 +317,7 @@
         </div>
         <div class="kpi">
           <div class="kpi-label">Total Messages</div>
-          <div class="kpi-num">${(d.messages||[]).length}</div>
+          <div class="kpi-num">${messages.length}</div>
         </div>
         <div class="kpi">
           <div class="kpi-label">Unread</div>
@@ -302,14 +328,15 @@
         <div class="panel-head"><h3>Recent Messages</h3>
           <button class="btn btn-ghost" data-go="messages">View all</button>
         </div>
-        ${(d.messages||[]).slice(0,5).length === 0
+        ${messages.slice(0,5).length === 0
           ? '<p style="color:var(--text-faint)">No messages yet. Submissions from the contact form will appear here.</p>'
           : `<table class="admin-table">
-              <thead><tr><th>From</th><th>Subject</th><th>Received</th></tr></thead>
+              <thead><tr><th>From</th><th>WhatsApp</th><th>Subject</th><th>Received</th></tr></thead>
               <tbody>
-              ${(d.messages||[]).slice(0,5).map(m => `
+              ${messages.slice(0,5).map(m => `
                 <tr>
                   <td><strong>${escapeHtml(m.name)}</strong><br/><span style="color:var(--text-faint);font-size:.85rem">${escapeHtml(m.email)}</span></td>
+                  <td>${m.whatsapp ? `<a href="https://wa.me/${escapeHtml(m.whatsapp.replace(/\D/g,''))}" target="_blank" rel="noopener">${escapeHtml(m.whatsapp)}</a>` : '<span style="color:var(--text-faint)">—</span>'}</td>
                   <td>${escapeHtml(m.subject || '(no subject)')}</td>
                   <td style="color:var(--text-dim)">${formatDate(m.receivedAt)}</td>
                 </tr>
@@ -896,7 +923,7 @@
 
   // --------- MESSAGES ---------
   function viewMessages() {
-    const messages = (AlienStore.get().messages || []);
+    const messages = getMessages();
     return `
       <div class="admin-topbar">
         <h2>Messages</h2>
@@ -906,12 +933,13 @@
         ${messages.length === 0
           ? '<p style="color:var(--text-faint);text-align:center;padding:30px;">No messages yet. Submissions from the contact form will appear here.</p>'
           : `<table class="admin-table">
-              <thead><tr><th></th><th>From</th><th>Subject</th><th>Received</th><th></th></tr></thead>
+              <thead><tr><th></th><th>From</th><th>WhatsApp</th><th>Subject</th><th>Received</th><th></th></tr></thead>
               <tbody>
               ${messages.map(m => `
                 <tr style="${m.read ? '' : 'background: rgba(0,240,255,0.04);'}">
                   <td>${m.read ? '' : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></span>'}</td>
                   <td><strong>${escapeHtml(m.name)}</strong><br/><span style="color:var(--text-faint);font-size:.85rem">${escapeHtml(m.email)}</span></td>
+                  <td>${m.whatsapp ? `<a href="https://wa.me/${escapeHtml(m.whatsapp.replace(/\D/g,''))}" target="_blank" rel="noopener">${escapeHtml(m.whatsapp)}</a>` : '<span style="color:var(--text-faint)">—</span>'}</td>
                   <td>${escapeHtml(m.subject || '(no subject)')}</td>
                   <td style="color:var(--text-dim)">${formatDate(m.receivedAt)}</td>
                   <td>
@@ -931,30 +959,30 @@
     const clear = document.getElementById('clear-msgs');
     if (clear) clear.addEventListener('click', () => {
       if (!confirm('Delete ALL messages? This cannot be undone.')) return;
-      const d = AlienStore.get();
-      d.messages = [];
-      AlienStore.set(d);
+      const ids = getMessages().map(m => m.id);
+      liveMessages = [];                              // optimistic
+      AlienMessages.clear(ids);
       AlienToast('All messages cleared', 'success');
       renderSection();
     });
     document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => openMessageModal(b.dataset.view)));
     document.querySelectorAll('[data-delete]').forEach(b => b.addEventListener('click', () => {
       if (!confirm('Delete this message?')) return;
-      const d = AlienStore.get();
-      d.messages = d.messages.filter(m => m.id !== b.dataset.delete);
-      AlienStore.set(d);
+      const id = b.dataset.delete;
+      if (Array.isArray(liveMessages)) liveMessages = liveMessages.filter(m => m.id !== id);  // optimistic
+      AlienMessages.remove(id);
       AlienToast('Message deleted', 'success');
       renderSection();
     }));
   }
   function openMessageModal(id) {
-    const d = AlienStore.get();
-    const m = d.messages.find(x => x.id === id);
+    const m = getMessages().find(x => x.id === id);
     if (!m) return;
     if (!m.read) {
-      m.read = true;
-      AlienStore.set(d);
+      m.read = true;                          // optimistic — Firestore syncs below
+      if (window.AlienMessages) AlienMessages.markRead(id);
     }
+    const waDigits = (m.whatsapp || '').replace(/\D/g, '');
     showModal(`
       <div class="modal-head">
         <h3>${escapeHtml(m.subject || '(no subject)')}</h3>
@@ -965,6 +993,12 @@
         <div><strong>${escapeHtml(m.name)}</strong> &lt;<a href="mailto:${m.email}">${escapeHtml(m.email)}</a>&gt;</div>
       </div>
       <div style="margin-bottom:16px">
+        <div style="color:var(--text-faint);font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:4px">WhatsApp</div>
+        <div>${waDigits
+          ? `<a href="https://wa.me/${escapeHtml(waDigits)}" target="_blank" rel="noopener">${escapeHtml(m.whatsapp)}</a>`
+          : '<span style="color:var(--text-faint)">Not provided</span>'}</div>
+      </div>
+      <div style="margin-bottom:16px">
         <div style="color:var(--text-faint);font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:4px">Received</div>
         <div>${formatDate(m.receivedAt, true)}</div>
       </div>
@@ -973,6 +1007,7 @@
         <div style="padding:16px;background:rgba(5,7,26,0.6);border:1px solid var(--border);border-radius:10px;white-space:pre-wrap;line-height:1.7;">${escapeHtml(m.message)}</div>
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+        ${waDigits ? `<a href="https://wa.me/${escapeHtml(waDigits)}" target="_blank" rel="noopener" class="btn btn-ghost">Reply on WhatsApp</a>` : ''}
         <a href="mailto:${m.email}?subject=${encodeURIComponent('Re: ' + (m.subject || ''))}" class="btn btn-ghost">Reply via Email</a>
         <button type="button" class="btn btn-primary" data-close>Close</button>
       </div>

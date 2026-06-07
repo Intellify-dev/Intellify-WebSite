@@ -41,9 +41,15 @@
             <input type="email" id="cf-email" name="email" required placeholder="you@galaxy.com" autocomplete="email"/>
           </div>
         </div>
-        <div class="field">
-          <label for="cf-subject">Subject</label>
-          <input type="text" id="cf-subject" name="subject" placeholder="What's the mission?"/>
+        <div class="form-row">
+          <div class="field">
+            <label for="cf-whatsapp">WhatsApp Number</label>
+            <input type="tel" id="cf-whatsapp" name="whatsapp" required placeholder="e.g. +963 9XX XXX XXX" autocomplete="tel" inputmode="tel"/>
+          </div>
+          <div class="field">
+            <label for="cf-subject">Subject</label>
+            <input type="text" id="cf-subject" name="subject" placeholder="What's the mission?"/>
+          </div>
         </div>
         <div class="field">
           <label for="cf-message">Message</label>
@@ -55,7 +61,7 @@
         </button>
         <div class="form-status" id="form-status"></div>
         <p style="margin-top: 14px; font-size: 0.85rem; color: var(--text-faint);">
-          Submitting opens your email client with the message pre-filled, and stores a copy in the admin dashboard.
+          Your message reaches our team instantly and we'll reply on WhatsApp or email — usually within a few hours.
         </p>
       </form>
     </div>
@@ -121,16 +127,44 @@
 
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
-  form.addEventListener('submit', (e) => {
+
+  // Best-effort: email a copy of the message to the company inbox via Web3Forms.
+  // Never blocks the submission — the live dashboard is the source of truth.
+  async function emailCopy(d) {
+    const key = window.WEB3FORMS_ACCESS_KEY;
+    if (!key || key === 'PASTE_YOUR_WEB3FORMS_ACCESS_KEY') return; // email not set up yet
+    const res = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        access_key: key,
+        subject: `INTELLIFY website — ${d.subject}`,
+        from_name: 'INTELLIFY Website',
+        name: d.name,
+        email: d.email,
+        message:
+          `New message from the INTELLIFY contact form\n\n` +
+          `Name: ${d.name}\n` +
+          `Email: ${d.email}\n` +
+          `WhatsApp: ${d.whatsapp}\n` +
+          `Subject: ${d.subject}\n\n` +
+          `${d.message}`
+      })
+    });
+    if (!res.ok) throw new Error('Email service returned ' + res.status);
+  }
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = form.elements['name'].value.trim();
     const email = form.email.value.trim();
+    const whatsapp = form.querySelector('[name="whatsapp"]').value.trim();
     const subject = form.subject.value.trim() || 'New message from INTELLIFY website';
     const message = form.message.value.trim();
 
-    if (!name || !email || !message) {
+    if (!name || !email || !whatsapp || !message) {
       status.className = 'form-status show error';
-      status.textContent = 'Please fill in name, email and message.';
+      status.textContent = 'Please fill in your name, email, WhatsApp number and message.';
       return;
     }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
@@ -138,29 +172,37 @@
       status.textContent = 'Please enter a valid email address.';
       return;
     }
+    if (whatsapp.replace(/\D/g, '').length < 7) {
+      status.className = 'form-status show error';
+      status.textContent = 'Please enter a valid WhatsApp number.';
+      return;
+    }
 
-    // Save message to local store
-    const data = AlienStore.get();
-    data.messages = data.messages || [];
-    data.messages.unshift({
-      id: 'm' + Date.now(),
-      name, email, subject, message,
-      receivedAt: new Date().toISOString(),
-      read: false
-    });
-    AlienStore.set(data);
+    const btn = form.querySelector('button[type="submit"]');
+    if (btn) btn.disabled = true;
+    status.className = 'form-status show';
+    status.textContent = 'Transmitting…';
 
-    // Open email client
-    const to = data.contact.email;
-    const body = `Name: ${name}\nEmail: ${email}\n\n${message}`;
-    const mailto = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const payload = { name, email, whatsapp, subject, message };
+    try {
+      // 1) Save to the live dashboard — real-time, visible from any device.
+      await AlienMessages.submit(payload);
 
-    status.className = 'form-status show success';
-    status.textContent = 'Message saved & email client opened. We will be in touch shortly!';
-    AlienToast('Message transmitted successfully', 'success');
+      // 2) Email a copy to the company inbox (best-effort, never blocks).
+      emailCopy(payload).catch(err => console.warn('Email copy failed', err));
 
-    window.location.href = mailto;
-    form.reset();
+      status.className = 'form-status show success';
+      status.textContent = 'Message sent! Our team has it and will be in touch shortly.';
+      AlienToast('Message transmitted successfully', 'success');
+      form.reset();
+    } catch (err) {
+      console.error('Message submit failed', err);
+      status.className = 'form-status show error';
+      status.textContent = 'Could not send your message. Please try again, or reach us on WhatsApp.';
+      AlienToast('Sending failed — please try again', 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
   });
 })();
 </script>

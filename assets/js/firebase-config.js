@@ -29,6 +29,22 @@ window.FIREBASE_ENABLED = true;
 // Where the site content lives in Firestore (collection / document).
 window.FIREBASE_DOC = { collection: "site", doc: "content" };
 
+/* ---- Email notifications for the contact form (Web3Forms — free) ----
+   Every message a visitor sends is saved live to the admin dashboard AND
+   emailed to your company inbox below.
+
+   To turn the email on (one time):
+   1. Go to https://web3forms.com
+   2. Enter your inbox email (admin.intellify@gmail.com) → you'll receive an
+      "Access Key" by email.
+   3. Paste that key between the quotes below, replacing the placeholder.
+
+   The access key is SAFE to publish — it only allows sending to YOUR verified
+   inbox. Leaving the placeholder simply skips the email; messages still arrive
+   on the dashboard in real time. */
+window.CONTACT_INBOX_EMAIL    = "admin.intellify@gmail.com";
+window.WEB3FORMS_ACCESS_KEY   = "bb753998-0f27-43a7-912a-4a56be998fbb";
+
 // Initialise Firebase if it's enabled and the SDK loaded.
 (function () {
   if (!window.FIREBASE_ENABLED) return;
